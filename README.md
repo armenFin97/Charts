@@ -17,7 +17,9 @@ An interactive dashboard for monitoring A/B test conversion rates. The UI mirror
 - **Variation selector** (always keeps at least one active line).
 - **Day / Week** aggregation toggle with automatic axis recalculation.
 - **Line style selector** (Line, Smooth, Area) — bonus requirement.
+- **Interactive zoom** with brush + **Reset zoom** button — bonus requirement.
 - **Light/Dark theme toggle** — bonus requirement.
+- **Export visible chart to PNG** — bonus requirement.
 - Fully responsive layout between 671 px and 1300 px.
 - Ready for GitHub Pages deployment via `npm run deploy`.
 
@@ -43,11 +45,7 @@ Open the dev server URL (shown in the terminal) to view the dashboard locally.
 ## Deploying to GitHub Pages
 
 1. Make sure your repository has GitHub Pages enabled (e.g., `gh-pages` branch).
-2. (Optional) Set the base path for non-root deployments:
-   ```bash
-   # Example for username.github.io/frontend-interview-task
-   set VITE_BASE_PATH=/frontend-interview-task/
-   ```
+2. Make sure the Vite `base` path matches your repository slug. It is currently set to `/Charts/` inside `vite.config.ts`. Update it if your repo name changes.
 3. Run `npm run deploy`. The script builds the project and pushes `dist/` to the `gh-pages` branch via the [`gh-pages`](https://www.npmjs.com/package/gh-pages) package.
 
 ## Project Structure

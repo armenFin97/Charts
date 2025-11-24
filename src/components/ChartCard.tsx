@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Area,
   CartesianGrid,
@@ -8,10 +8,13 @@ import {
   XAxis,
   YAxis,
   Line,
+  Brush,
 } from 'recharts'
+import { toPng } from 'html-to-image'
 import type {
   ChartPoint,
   LineStyle,
+  Timeframe,
   Variation,
   VariationFieldKey,
 } from '../types/chart'
@@ -23,6 +26,7 @@ type ChartCardProps = {
   variations: Variation[]
   selectedIds: string[]
   lineStyle: LineStyle
+  timeframe: Timeframe
   fieldForVariation: (variationId: string) => VariationFieldKey
 }
 
@@ -83,22 +87,81 @@ export function ChartCard({
   variations,
   selectedIds,
   lineStyle,
+  timeframe,
   fieldForVariation,
 }: ChartCardProps) {
+  const [zoomRange, setZoomRange] = useState<[number, number] | null>(null)
+  const chartRef = useRef<HTMLDivElement>(null)
+
   const filteredData = useMemo(
     () => filterData(data, selectedIds, fieldForVariation),
     [data, selectedIds, fieldForVariation],
   )
 
+  useEffect(() => {
+    setZoomRange(null)
+  }, [filteredData])
+
+  const zoomedData = useMemo(() => {
+    if (!zoomRange) return filteredData
+    const [start, end] = zoomRange
+    return filteredData.slice(start, end + 1)
+  }, [filteredData, zoomRange])
+
   const domain = useMemo(
-    () => buildDomain(filteredData, selectedIds, fieldForVariation),
-    [filteredData, selectedIds, fieldForVariation],
+    () => buildDomain(zoomedData, selectedIds, fieldForVariation),
+    [zoomedData, selectedIds, fieldForVariation],
   )
 
   const visibleVariations = useMemo(
     () => variations.filter((variation) => selectedIds.includes(variation.id)),
     [variations, selectedIds],
   )
+
+  const handleBrushChange = useCallback(
+    (range?: { startIndex?: number; endIndex?: number }) => {
+      if (
+        range?.startIndex == null ||
+        range?.endIndex == null ||
+        filteredData.length === 0
+      ) {
+        return
+      }
+
+      if (
+        range.startIndex === 0 &&
+        range.endIndex === filteredData.length - 1
+      ) {
+        setZoomRange(null)
+      } else {
+        setZoomRange([range.startIndex, range.endIndex])
+      }
+    },
+    [filteredData],
+  )
+
+  const handleResetZoom = () => setZoomRange(null)
+
+  const handleExport = useCallback(async () => {
+    if (!chartRef.current) return
+    const backgroundColor =
+      getComputedStyle(document.documentElement).getPropertyValue(
+        '--color-app-bg',
+      ) || '#ffffff'
+    try {
+      const dataUrl = await toPng(chartRef.current, {
+        pixelRatio: 2,
+        backgroundColor: backgroundColor.trim() || undefined,
+      })
+      const link = document.createElement('a')
+      link.download = `conversion-${timeframe}-${Date.now()}.png`
+      link.href = dataUrl
+      link.click()
+    } catch (error) {
+      console.error('Failed to export chart', error)
+      window.alert('Export failed. Please try again.')
+    }
+  }, [timeframe])
 
   if (!filteredData.length) {
     return (
@@ -110,8 +173,21 @@ export function ChartCard({
 
   return (
     <div className={styles.card}>
-      <ResponsiveContainer width="100%" height={420}>
-        <ComposedChart data={filteredData}>
+      <div className={styles.toolbar}>
+        <button type="button" onClick={handleExport}>
+          Export PNG
+        </button>
+        <button
+          type="button"
+          onClick={handleResetZoom}
+          disabled={!zoomRange}
+        >
+          Reset zoom
+        </button>
+      </div>
+      <div ref={chartRef}>
+        <ResponsiveContainer width="100%" height={420}>
+          <ComposedChart data={zoomedData}>
           <CartesianGrid
             strokeDasharray="4 8"
             stroke="var(--color-grid)"
@@ -142,6 +218,19 @@ export function ChartCard({
                 fieldForVariation={fieldForVariation}
               />
             )}
+          />
+          <Brush
+            dataKey="label"
+            data={filteredData}
+            height={28}
+            stroke="var(--color-accent)"
+            startIndex={zoomRange ? zoomRange[0] : 0}
+            endIndex={
+              zoomRange
+                ? zoomRange[1]
+                : Math.max(filteredData.length - 1, 0)
+            }
+            onChange={handleBrushChange}
           />
           {lineStyle === 'area' && (
             <defs>
@@ -190,8 +279,9 @@ export function ChartCard({
               />
             )
           })}
-        </ComposedChart>
-      </ResponsiveContainer>
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   )
 }

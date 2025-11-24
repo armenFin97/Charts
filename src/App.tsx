@@ -98,6 +98,7 @@ function App() {
           variations={variations}
           selectedIds={selectedVariations}
           lineStyle={lineStyle}
+          timeframe={timeframe}
           fieldForVariation={variationField}
         />
       </div>
