@@ -17,7 +17,6 @@ An interactive dashboard for monitoring A/B test conversion rates. The UI mirror
 - **Variation selector** (always keeps at least one active line).
 - **Day / Week** aggregation toggle with automatic axis recalculation.
 - **Line style selector** (Line, Smooth, Area) — bonus requirement.
-- **Interactive zoom** with brush + **Reset zoom** button — bonus requirement.
 - **Light/Dark theme toggle** — bonus requirement.
 - **Export visible chart to PNG** — bonus requirement.
 - Fully responsive layout between 671 px and 1300 px.

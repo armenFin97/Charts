@@ -12,11 +12,19 @@
 
 .toolbar {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 }
 
-.toolbar button {
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+.toolbarButton {
   border: 1px solid var(--color-border);
   background-color: var(--color-surface-strong);
   color: var(--color-text);
@@ -28,14 +36,9 @@
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.toolbar button:hover:enabled {
+.toolbarButton:hover {
   background-color: color-mix(in srgb, var(--color-accent) 12%, transparent);
   border-color: var(--color-accent);
-}
-
-.toolbar button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .emptyState {

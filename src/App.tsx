@@ -101,6 +101,7 @@ function App() {
           timeframe={timeframe}
           fieldForVariation={variationField}
         />
+
       </div>
     </div>
   )
